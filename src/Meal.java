@@ -8,11 +8,22 @@ public class Meal {
     @SerializedName("strMeal")
     private String name;
 
+    // RecipeFinder fills it in when ranking the meals as it's not in the JSON
+    private int matchCount;
+
     public String getId() {
         return id;
     }
 
     public String getName() {
         return name;
+    }
+
+    public int getMatchCount() {
+        return matchCount;
+    }
+
+    public void addMatch() {
+        matchCount++;
     }
 }

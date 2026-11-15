@@ -3,6 +3,8 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Main {
+    private static final int TOP_MEALS = 5;
+
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter your ingredients, separated by commas: ");
@@ -10,17 +12,15 @@ public class Main {
         scanner.close();
 
         List<String> ingredients = cleanIngredients(input);
-        ApiClient api = new ApiClient();
+        RecipeFinder finder = new RecipeFinder(new ApiClient());
+        List<Meal> topMeals = finder.findTopMeals(ingredients, TOP_MEALS);
 
-        for (int i = 0; i < ingredients.size(); i++) {
-            String ingredient = ingredients.get(i);
-            List<Meal> meals = api.searchIngredient(ingredient);
-
-            System.out.println();
-            System.out.println(ingredient + ": " + meals.size() + " meals found");
-            for (int j = 0; j < meals.size(); j++) {
-                System.out.println("  " + meals.get(j).getName());
-            }
+        System.out.println();
+        System.out.println("Top meals:");
+        for (int i = 0; i < topMeals.size(); i++) {
+            Meal meal = topMeals.get(i);
+            System.out.println((i + 1) + ". " + meal.getName()
+                    + " (uses " + meal.getMatchCount() + " of your " + ingredients.size() + " ingredients)");
         }
     }
     /* Cleaning the input to make sure extra spaces and commas don't affect searches 
