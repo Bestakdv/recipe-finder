@@ -34,7 +34,8 @@ public class Main {
         scanner.close();
 
         Recipe recipe = api.getRecipe(topMeals.get(choice - 1).getId());
-        printRecipe(recipe);
+        List<String> missing = finder.findMissingIngredients(recipe, ingredients);
+        printRecipe(recipe, missing);
     }
     /* Cleaning the input to make sure extra spaces and commas don't affect searches 
        and repeated ingredients aren't counted twice when doing the ranking */
@@ -51,7 +52,7 @@ public class Main {
         return ingredients;
     }
 
-    private static void printRecipe(Recipe recipe) {
+    private static void printRecipe(Recipe recipe, List<String> missing) {
         List<String> ingredients = recipe.getIngredients();
         List<String> measures = recipe.getMeasures();
 
@@ -60,8 +61,15 @@ public class Main {
         System.out.println();
         System.out.println("Ingredients:");
         for (int i = 0; i < ingredients.size(); i++) {
-            System.out.println("  - " + (measures.get(i) + " " + ingredients.get(i)).trim());
+            String line = "  - " + (measures.get(i) + " " + ingredients.get(i)).trim();
+            if (missing.contains(ingredients.get(i))) {
+                line += " (missing)";
+            }
+            System.out.println(line);
         }
+
+        System.out.println();
+        System.out.println("You're missing " + missing.size() + " of " + ingredients.size() + " ingredients.");
 
         System.out.println();
         System.out.println("Instructions:");

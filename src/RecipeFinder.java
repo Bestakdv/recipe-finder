@@ -39,4 +39,18 @@ public class RecipeFinder {
         // Using Math.min as there can be less than 5 meals found and this prevents crashing
         return new ArrayList<>(rankedMeals.subList(0, Math.min(limit, rankedMeals.size())));
     }
+
+    // Comparing in lowercase as the users ingredients are already lowercase and names like Chicken Breast still match
+    public List<String> findMissingIngredients(Recipe recipe, List<String> userIngredients) {
+        List<String> recipeIngredients = recipe.getIngredients();
+        List<String> missing = new ArrayList<>();
+
+        for (int i = 0; i < recipeIngredients.size(); i++) {
+            String ingredient = recipeIngredients.get(i);
+            if (!userIngredients.contains(ingredient.toLowerCase())) {
+                missing.add(ingredient);
+            }
+        }
+        return missing;
+    }
 }
