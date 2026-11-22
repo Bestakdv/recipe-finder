@@ -1,3 +1,5 @@
+import java.io.IOException;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -5,15 +7,33 @@ import java.util.Scanner;
 public class Main {
     private static final int TOP_MEALS = 5;
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        System.out.print("Enter your ingredients, separated by commas: ");
-        String input = scanner.nextLine();
+        try {
+            run(scanner);
+        // Catching ConnectException first because it means that there is no internet and it needs its own message
+        } catch (ConnectException e) {
+            System.out.println("Could not connect to TheMealDB. Check your internet connection and try again.");
+        } catch (IOException e) {
+            System.out.println("Something went wrong with TheMealDB: " + e.getMessage());
+        } catch (InterruptedException e) {
+            System.out.println("The request was interrupted. Please try again.");
+        } finally {
+            scanner.close();
+        }
+    }
 
-        List<String> ingredients = cleanIngredients(input);
+    private static void run(Scanner scanner) throws IOException, InterruptedException {
+        List<String> ingredients = readIngredients(scanner);
         ApiClient api = new ApiClient();
         RecipeFinder finder = new RecipeFinder(api);
         List<Meal> topMeals = finder.findTopMeals(ingredients, TOP_MEALS);
+
+        if (topMeals.isEmpty()) {
+            System.out.println();
+            System.out.println("No meals found with those ingredients. Try different ingredients.");
+            return;
+        }
 
         System.out.println();
         System.out.println("Top meals:");
@@ -23,19 +43,42 @@ public class Main {
                     + " (uses " + meal.getMatchCount() + " of your " + ingredients.size() + " ingredients)");
         }
 
-        if (topMeals.isEmpty()) {
-            scanner.close();
-            return;
-        }
-
         System.out.println();
-        System.out.print("Pick a meal (1-" + topMeals.size() + "): ");
-        int choice = Integer.parseInt(scanner.nextLine().trim());
-        scanner.close();
+        int choice = readChoice(scanner, topMeals.size());
 
         Recipe recipe = api.getRecipe(topMeals.get(choice - 1).getId());
         List<String> missing = finder.findMissingIngredients(recipe, ingredients);
         printRecipe(recipe, missing);
+    }
+
+    private static List<String> readIngredients(Scanner scanner) {
+        List<String> ingredients = new ArrayList<>();
+        while (ingredients.isEmpty()) {
+            System.out.print("Enter your ingredients, separated by commas: ");
+            ingredients = cleanIngredients(scanner.nextLine());
+            if (ingredients.isEmpty()) {
+                System.out.println("Please enter at least one ingredient.");
+            }
+        }
+        return ingredients;
+    }
+
+    private static int readChoice(Scanner scanner, int maxChoice) {
+        while (true) {
+            System.out.print("Pick a meal (1-" + maxChoice + "): ");
+            int choice;
+            try {
+                choice = Integer.parseInt(scanner.nextLine().trim());
+            } catch (NumberFormatException e) {
+                // Any non number becomes an invalid choice and it asks again instead of crashing
+                choice = 0;
+            }
+
+            if (choice >= 1 && choice <= maxChoice) {
+                return choice;
+            }
+            System.out.println("Please enter a number from 1 to " + maxChoice + ".");
+        }
     }
     /* Cleaning the input to make sure extra spaces and commas don't affect searches 
        and repeated ingredients aren't counted twice when doing the ranking */

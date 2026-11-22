@@ -33,16 +33,20 @@ public class ApiClient {
     }
 
     public Recipe getRecipe(String mealId) throws IOException, InterruptedException {
-        JsonObject meal = JsonParser.parseString(sendRequest("lookup.php?i=" + mealId))
+        JsonElement mealsJson = JsonParser.parseString(sendRequest("lookup.php?i=" + mealId))
                 .getAsJsonObject()
-                .getAsJsonArray("meals")
-                .get(0)
-                .getAsJsonObject();
+                .get("meals");
+
+        // TheMealDB returns null instead of a recipe when the ID doesn't exist and this prevents crashing
+        if (mealsJson == null || mealsJson.isJsonNull()) {
+            throw new IOException("Could not find that recipe.");
+        }
+        JsonObject meal = mealsJson.getAsJsonArray().get(0).getAsJsonObject();
 
         List<String> ingredients = new ArrayList<>();
         List<String> measures = new ArrayList<>();
 
-        // The API has up to 20 ingredients as separate fields instead of a list and this loopsthrough all of them and skips any empty ones
+        // The API has up to 20 ingredients as separate fields instead of a list and this loops through all of them and skips any empty ones
         for (int i = 1; i <= 20; i++) {
             String ingredient = getText(meal, "strIngredient" + i);
             if (!ingredient.isEmpty()) {
@@ -53,7 +57,7 @@ public class ApiClient {
         return new Recipe(getText(meal, "strMeal"), ingredients, measures, getText(meal, "strInstructions"));
     }
 
-    // Searching and looking up recipes send the same request and this keeps it in one place
+    // Searching and looking up recipes send the same request so this keeps it in one place
     private String sendRequest(String path) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(URL + path))
@@ -61,6 +65,11 @@ public class ApiClient {
                 .build();
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        // TheMealDB sends back an error page instead of JSON when something goes wrong on its end and this stops it from being read as meal data
+        if (response.statusCode() != 200) {
+            throw new IOException("TheMealDB returned status code " + response.statusCode());
+        }
         return response.body();
     }
 
