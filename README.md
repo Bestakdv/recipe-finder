@@ -27,7 +27,7 @@ The code is split into 5 classes:
 - **Library:** [Gson](https://github.com/google/gson) 2.11.0 for reading JSON (included in `lib/`)
 - **Built-in Java libraries:** `HttpClient`, `Scanner`, `HashMap`, `ArrayList`, `Collections`
 - **API:** [TheMealDB](https://www.themealdb.com/api.php) (free, no account or key needed)
-- **Data storage:** none, everything is kept in memory while the program runs
+- **Data storage:** favorites.txt, a plain text file with one saved recipe name per line
 - **Tools:** Git and GitHub
 
 ## Setup
@@ -46,7 +46,7 @@ cd recipe-finder
 
 **3. Compile:**
 ```
-javac -cp "lib/gson-2.11.0.jar" -d out src/Main.java src/ApiClient.java src/Meal.java src/RecipeFinder.java src/Recipe.java
+javac -cp "lib/gson-2.11.0.jar" -d out src/Main.java src/ApiClient.java src/Meal.java src/RecipeFinder.java src/Recipe.java src/Favorites.java
 ```
 
 **4. Run:**
@@ -110,7 +110,7 @@ Heat the oil in a large flameproof casserole dish and brown the chicken pieces o
 - [x] Show a meal's full recipe
 - [x] Mark the ingredients the user is missing
 - [x] Handle empty input, no meals found, bad meal picks, and no internet
-- [ ] Save favorite recipes to view them later
+- [X] Save favorite recipes to view them later
 - [ ] Export missing ingredients as a shopping list
 - [ ] Filter results by cuisine or category
 - [ ] Ignore common staples (salt, pepper, water) when ranking, so they don't outweigh main ingredients
