@@ -6,6 +6,7 @@ import java.util.Scanner;
 
 public class Main {
     private static final int TOP_MEALS = 5;
+    private static final String FAVORITES_FILE = "favorites.txt";
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -24,6 +25,9 @@ public class Main {
     }
 
     private static void run(Scanner scanner) throws IOException, InterruptedException {
+        Favorites favorites = new Favorites(FAVORITES_FILE);
+        showFavorites(favorites);
+
         List<String> ingredients = readIngredients(scanner);
         ApiClient api = new ApiClient();
         RecipeFinder finder = new RecipeFinder(api);
@@ -49,6 +53,7 @@ public class Main {
         Recipe recipe = api.getRecipe(topMeals.get(choice - 1).getId());
         List<String> missing = finder.findMissingIngredients(recipe, ingredients);
         printRecipe(recipe, missing);
+        askToSave(scanner, favorites, recipe.getName());
     }
 
     private static List<String> readIngredients(Scanner scanner) {
@@ -117,5 +122,42 @@ public class Main {
         System.out.println();
         System.out.println("Instructions:");
         System.out.println(recipe.getInstructions());
+    }
+
+    private static void showFavorites(Favorites favorites) {
+        try {
+            List<String> names = favorites.load();
+            if (!names.isEmpty()) {
+                System.out.println("Your favorites:");
+                for (int i = 0; i < names.size(); i++) {
+                    System.out.println("  - " + names.get(i));
+                }
+                System.out.println();
+            }
+        } catch (IOException e) {
+            // A problem with the favorites file shouldn't stop the user from searching for meals
+            System.out.println("Could not read your favorites.");
+            System.out.println();
+        }
+    }
+
+    private static void askToSave(Scanner scanner, Favorites favorites, String mealName) {
+        System.out.println();
+        System.out.print("Save this recipe to your favorites? (y/n): ");
+        String answer = scanner.nextLine().trim().toLowerCase();
+        if (!answer.equals("y") && !answer.equals("yes")) {
+            return;
+        }
+
+        // Error is caught here instead of in main because main's error messages are about TheMealDB and this is a file problem
+        try {
+            if (favorites.save(mealName)) {
+                System.out.println("Saved to favorites.");
+            } else {
+                System.out.println("This recipe is already in your favorites.");
+            }
+        } catch (IOException e) {
+            System.out.println("Could not save to favorites.");
+        }
     }
 }
