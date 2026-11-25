@@ -85,6 +85,7 @@ public class Main {
             System.out.println("Please enter a number from 1 to " + maxChoice + ".");
         }
     }
+    
     /* Cleaning the input to make sure extra spaces and commas don't affect searches 
        and repeated ingredients aren't counted twice when doing the ranking */
     private static List<String> cleanIngredients(String input) {

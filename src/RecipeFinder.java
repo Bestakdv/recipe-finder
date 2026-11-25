@@ -28,7 +28,7 @@ public class RecipeFinder {
 
         List<Meal> rankedMeals = new ArrayList<>(mealsID.values());
 
-        // Sorting by name because HashMap doesn't keep an order so this makes the same input prints the same order
+        // Sorting ties by name because HashMap doesn't keep an order so this makes the same input print the same order
         Collections.sort(rankedMeals, (a, b) -> {
             if (a.getMatchCount() != b.getMatchCount()) {
                 return b.getMatchCount() - a.getMatchCount();
@@ -40,7 +40,7 @@ public class RecipeFinder {
         return new ArrayList<>(rankedMeals.subList(0, Math.min(limit, rankedMeals.size())));
     }
 
-    // Comparing in lowercase as the users ingredients are already lowercase and names like Chicken Breast still match
+    // Comparing in lowercase as the user's ingredients are already lowercase and names like Chicken Breast still match
     public List<String> findMissingIngredients(Recipe recipe, List<String> userIngredients) {
         List<String> recipeIngredients = recipe.getIngredients();
         List<String> missing = new ArrayList<>();
